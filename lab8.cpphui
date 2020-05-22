@@ -1,0 +1,77 @@
+#include <iostream>
+#include <conio.h>
+#include <iomanip>
+#include <math.h>
+#include <stdlib.h>
+
+using namespace std;
+
+double u[100][100];
+double F1y(double y) {
+	return -10 * y * y - 8 * y + 6;
+}
+double F2y(double y) {
+	return -10 * y * y + 22;
+}
+double F1x(double x) {
+	return 9 * x * x + 7 * x + 6;
+}
+double F2x(double x) {
+	return 9 * x * x - 15 * x - 12;
+}
+void Print(int n) {
+	for (int j = 0; j < n; j++) {
+		for (int i = 0; i < n; i++)
+			cout << setw(5) << setprecision(3) << u[i][j] << "\t";
+	}
+	cout << endl;
+}
+void FiniteDifferenceMethod(double epsilon) {
+	double h = 0.1;
+	int n = (int)(1 / h), iterations = 0;
+	double x, y;
+	double L[100];
+	for (int i = 0; i <= n; i++) {
+		x = i * h;
+		y = i * h;
+		u[i][0] = F1x(x);
+		u[i][n] = F2x(x);
+		u[0][i] = F1y(y);
+		u[n][i] = F2y(y);
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 1; j < n; j++) {
+			L[j] = h * (u[n][j] - u[0][j]);
+			u[i][j] = u[0][j] + i * L[j];
+		}
+	}
+	cout << "Сетка с нулевой итерации\n";
+	Print(n);
+	double r, r1, r2 = pow(10, 10), g, te = 0;
+	while (r2 > te) {
+		r1 = r2;
+		r2 = 0;
+		for (int i = 1; i < n; i++) {
+			for (int j = 1; j < n; j++) {
+				g = 0.25 * (u[i][j + 1] + u[i][j - 1] + u[i - 1][j] + u[i + 1][j]);
+				r = abs(g - u[i][j]);
+				if (r2 <= r)
+					r2 = r;
+				u[i][j] = g;
+			}
+		}
+		te = epsilon * (1 - r2 / r1);
+		iterations++;
+	}
+	cout << "\nСетка с точностью " << epsilon << " и количеством итераций " << iterations << endl;
+	Print(n);
+}
+int main() {
+	setlocale(LC_ALL, "Rus");
+	double eps = 0.001;
+	//cout << "Введите необходимую точность: e = ";
+	//cin >> eps;
+	FiniteDifferenceMethod(eps);
+	_getch();
+	return 0;
+}
